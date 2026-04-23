@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-sans: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Consolas, monospace;
+
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(179 84% 10%);
+  --primary: hsl(179 84% 10%);
+  --primary-foreground: hsl(0 0% 98%);
+  --secondary: hsl(0 0% 96%);
+  --secondary-foreground: hsl(179 84% 10%);
+  --muted: hsl(0 0% 96%);
+  --muted-foreground: hsl(0 0% 45%);
+  --accent: hsl(0 0% 96%);
+  --accent-foreground: hsl(179 84% 10%);
+  --destructive: hsl(0 72% 51%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(179 84% 10%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(179 84% 10%);
+  --border: hsl(0 0% 90%);
+  --input: hsl(0 0% 64%);
+  --ring: hsl(179 84% 10%);
+
+  --sidebar: hsl(0 0% 98%);
+  --sidebar-foreground: hsl(0 0% 25%);
+  --sidebar-primary: hsl(176 61% 19%);
+  --sidebar-primary-foreground: hsl(0 0% 98%);
+  --sidebar-accent: hsl(0 0% 96%);
+  --sidebar-accent-foreground: hsl(179 84% 10%);
+  --sidebar-border: hsl(0 0% 83%);
+  --sidebar-ring: hsl(0 0% 64%);
+
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: hsl(179 84% 10%);
+  --foreground: hsl(210 20% 98%);
+  --primary: hsl(0 0% 98%);
+  --primary-foreground: hsl(179 84% 10%);
+  --secondary: hsl(176 69% 22%);
+  --secondary-foreground: hsl(0 0% 98%);
+  --muted: hsl(176 69% 22%);
+  --muted-foreground: hsl(0 0% 64%);
+  --accent: hsl(176 69% 22%);
+  --accent-foreground: hsl(0 0% 98%);
+  --destructive: hsl(0 63% 31%);
+  --card: hsl(179 84% 10%);
+  --card-foreground: hsl(0 0% 98%);
+  --popover: hsl(179 84% 10%);
+  --popover-foreground: hsl(0 0% 98%);
+  --border: hsl(176 69% 22%);
+  --input: hsl(176 69% 22%);
+  --ring: hsl(0 0% 83%);
+
+  --sidebar: hsl(0 0% 9%);
+  --sidebar-foreground: hsl(0 0% 96%);
+  --sidebar-primary: hsl(224 76% 48%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(176 69% 22%);
+  --sidebar-accent-foreground: hsl(0 0% 96%);
+  --sidebar-border: hsl(176 69% 22%);
+  --sidebar-ring: hsl(0 0% 83%);
+}
+
+@theme inline {
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Chaiz Glow (brand accent green) */
+  --color-glow-50: #eefff6;
+  --color-glow-100: #d7ffeb;
+  --color-glow-200: #b1ffd9;
+  --color-glow-300: #75ffbc;
+  --color-glow-400: #22ef8d;
+  --color-glow-600: #23a468;
+  --color-glow-700: #04914e;
+  --color-glow-800: #097241;
+  --color-glow-900: #0a5d38;
+  --color-glow-950: #00351d;
+
+  --radius-sm: 0.125rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+
+  --shadow-small: 0 4px 16px -5px rgba(4, 47, 46, 0.1);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
