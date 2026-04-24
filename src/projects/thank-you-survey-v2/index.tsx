@@ -280,7 +280,7 @@ function CardFooter({
         <button
           type="button"
           onClick={onNext}
-          className="w-full h-11 rounded-lg border border-border bg-card hover:bg-accent font-semibold text-foreground transition-colors"
+          className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-95 transition-opacity"
         >
           {nextLabel}
         </button>
@@ -653,24 +653,14 @@ function DoneCard() {
     >
       <SurveyCard showClose={false}>
         <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            <motion.div
-              initial={{ y: 4, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.1 }}
-              className="text-base font-semibold text-foreground"
-            >
-              Thanks for sharing.
-            </motion.div>
-            <motion.div
-              initial={{ y: 4, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="text-sm text-muted-foreground"
-            >
-              Your answers help us make Chaiz better.
-            </motion.div>
-          </div>
+          <motion.div
+            initial={{ y: 4, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            className="text-base font-semibold text-foreground"
+          >
+            Thanks for sharing.
+          </motion.div>
           <motion.div
             initial={{ scale: 0, rotate: -20 }}
             animate={{ scale: 1, rotate: 0 }}
@@ -688,20 +678,11 @@ function DoneCard() {
         <motion.div
           initial={{ y: 4, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.2 }}
           className="text-sm text-muted-foreground"
         >
           View your contract details, track your coverage, and see what's next.
         </motion.div>
-        <motion.button
-          type="button"
-          initial={{ y: 4, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-95 transition-opacity flex items-center justify-center gap-2 mt-1"
-        >
-          Log in to your client area <Icon d={Icons.arrowRight} size={16} />
-        </motion.button>
       </SurveyCard>
     </motion.div>
   )
@@ -776,10 +757,12 @@ function ThankYouPage({
   children,
   mobile,
   viewContractPrimary,
+  pageCtaLabel,
 }: {
   children: React.ReactNode
   mobile: boolean
   viewContractPrimary: boolean
+  pageCtaLabel: string
 }) {
   return (
     <div className="min-h-[900px] bg-background">
@@ -853,7 +836,7 @@ function ThankYouPage({
           </div>
           {/* Survey slot */}
           <div className="pt-2">{children}</div>
-          {/* View Contract */}
+          {/* Page CTA (View Contract / Log In to Your Client Area) */}
           <button
             type="button"
             className={`w-full h-12 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors ${
@@ -862,7 +845,7 @@ function ThankYouPage({
                 : 'border border-border bg-card text-foreground hover:bg-accent'
             }`}
           >
-            View Contract <Icon d={Icons.arrowRight} size={16} />
+            {pageCtaLabel} <Icon d={Icons.arrowRight} size={16} />
           </button>
           <div className="text-xs text-muted-foreground">
             We've created an account for you to view your contract, claims
@@ -1009,6 +992,8 @@ export default function ThankYouSurveyV2() {
 
   const mobile = view === 'mobile'
   const viewContractPrimary = step === 'teaser' || step === 'done'
+  const pageCtaLabel =
+    step === 'done' ? 'Log In to Your Client Area' : 'View Contract'
 
   const surveyCard = (
     <AnimatePresence mode="wait">
@@ -1113,14 +1098,22 @@ export default function ThankYouSurveyV2() {
                   className="rounded-[32px] overflow-hidden bg-background"
                   style={{ width: 375 }}
                 >
-                  <ThankYouPage mobile viewContractPrimary={viewContractPrimary}>
+                  <ThankYouPage
+                    mobile
+                    viewContractPrimary={viewContractPrimary}
+                    pageCtaLabel={pageCtaLabel}
+                  >
                     {surveyCard}
                   </ThankYouPage>
                 </div>
               </div>
             ) : (
               <div className="rounded-xl overflow-hidden border border-border shadow-sm">
-                <ThankYouPage mobile={false} viewContractPrimary={viewContractPrimary}>
+                <ThankYouPage
+                  mobile={false}
+                  viewContractPrimary={viewContractPrimary}
+                  pageCtaLabel={pageCtaLabel}
+                >
                   {surveyCard}
                 </ThankYouPage>
               </div>
