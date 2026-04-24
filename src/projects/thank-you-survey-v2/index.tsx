@@ -685,6 +685,23 @@ function DoneCard() {
             <Icon d={Icons.checkCircle} size={22} />
           </motion.div>
         </div>
+        <motion.div
+          initial={{ y: 4, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="text-sm text-muted-foreground"
+        >
+          View your contract details, track your coverage, and see what's next.
+        </motion.div>
+        <motion.button
+          type="button"
+          initial={{ y: 4, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-95 transition-opacity flex items-center justify-center gap-2 mt-1"
+        >
+          Log in to your client area <Icon d={Icons.arrowRight} size={16} />
+        </motion.button>
       </SurveyCard>
     </motion.div>
   )
@@ -970,7 +987,7 @@ export default function ThankYouSurveyV2() {
     })
   }
   function closeSurvey() {
-    setStep('teaser')
+    setStep('done')
   }
   function toggleQ3(v: string) {
     setQ3((s) => (s.includes(v) ? s.filter((x) => x !== v) : [...s, v]))
