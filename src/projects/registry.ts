@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react'
 import BuyerSurvey from './buyer-survey'
 import HelloChaiz from './hello-chaiz'
+import Q1CardExplorations from './q1-card-explorations'
 import ThankYouSurveyV2 from './thank-you-survey-v2'
 
 export type Project = {
@@ -11,6 +12,13 @@ export type Project = {
 }
 
 export const projects: Project[] = [
+  {
+    slug: 'q1-card-explorations',
+    title: 'Q1 card explorations',
+    description:
+      'Five takes on a single-column dark-surface Q1 card, each with a different "where to begin" cue (none, inline hint, pulse, meta chip, arrow).',
+    Component: Q1CardExplorations,
+  },
   {
     slug: 'thank-you-survey-v2',
     title: 'Thank-you survey v2',
