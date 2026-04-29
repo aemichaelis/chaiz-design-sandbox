@@ -293,28 +293,23 @@ function CardFooter({
 }
 
 // ──────────────────────────────────────────────────────────
-// Q1 — source attribution (auto-advance on select). On mobile this card
-// starts in a collapsed peek state with a "Tap to Start" overlay; tapping
-// expands the cloud. On desktop the cloud is always fully visible.
+// Q1 — source attribution. Always shows the full pill cloud (no peek,
+// no close X, no counter — Q1 is the entry, can't be dismissed before
+// committing). Auto-advances on select for any option except "Other",
+// which expands an inline textarea + Next button.
 function Q1Card({
   selected,
   otherText,
   onSelect,
   onOtherChange,
-  onClose,
   onAutoAdvance,
-  mobile,
 }: {
   selected: string | null
   otherText: string
   onSelect: (v: string) => void
   onOtherChange: (v: string) => void
-  onClose: () => void
   onAutoAdvance: () => void
-  mobile: boolean
 }) {
-  const [expanded, setExpanded] = useState(!mobile)
-  const [otherFocus, setOtherFocus] = useState(false)
   return (
     <motion.div
       key="q1"
@@ -325,56 +320,28 @@ function Q1Card({
       exit="exit"
       transition={slideT}
     >
-      <DarkSurveyCard onClose={onClose}>
-        <div className="text-xl font-semibold leading-tight pr-7">
+      <DarkSurveyCard showClose={false}>
+        <div className="text-xl font-semibold leading-tight">
           How did you first hear about Chaiz?
         </div>
-        <motion.div
-          animate={{ height: expanded ? 'auto' : 96 }}
-          transition={{ duration: 0.32, ease: [0.2, 0.8, 0.2, 1] }}
-          className="relative overflow-hidden"
-        >
-          <div className="flex flex-wrap gap-2">
-            {Q1_OPTIONS.map((opt) => {
-              const isSelected = selected === opt
-              return (
-                <Pill
-                  key={opt}
-                  label={opt}
-                  selected={isSelected}
-                  onClick={() => {
-                    onSelect(opt)
-                    if (opt !== 'Other') {
-                      setTimeout(onAutoAdvance, 280)
-                    }
-                  }}
-                />
-              )
-            })}
-          </div>
-          {!expanded && (
-            <div
-              className="pointer-events-none absolute bottom-0 left-0 right-0 h-12"
-              style={{
-                background:
-                  'linear-gradient(to top, var(--card-background) 30%, transparent)',
-              }}
-            />
-          )}
-        </motion.div>
-        {!expanded && (
-          <button
-            type="button"
-            onClick={() => setExpanded(true)}
-            className="mx-auto inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full -mt-2"
-            style={{
-              background: 'rgba(255,255,255,0.14)',
-              color: '#fff',
-            }}
-          >
-            ↓ Tap to Start
-          </button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {Q1_OPTIONS.map((opt) => {
+            const isSelected = selected === opt
+            return (
+              <Pill
+                key={opt}
+                label={opt}
+                selected={isSelected}
+                onClick={() => {
+                  onSelect(opt)
+                  if (opt !== 'Other') {
+                    setTimeout(onAutoAdvance, 280)
+                  }
+                }}
+              />
+            )
+          })}
+        </div>
         <AnimatePresence>
           {selected === 'Other' && (
             <motion.div
@@ -383,36 +350,29 @@ function Q1Card({
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.26, ease: 'easeOut' }}
-              className="overflow-hidden"
+              className="overflow-hidden space-y-2"
             >
               <textarea
                 autoFocus
                 value={otherText}
-                onFocus={() => setOtherFocus(true)}
-                onBlur={() => setOtherFocus(false)}
                 onChange={(e) => onOtherChange(e.target.value.slice(0, 120))}
                 placeholder="Tell us where…"
-                rows={2}
-                className={`w-full rounded-lg bg-white p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none resize-none border-2 ${
-                  otherFocus ? 'border-[color:var(--color-glow-300)]' : 'border-transparent'
-                }`}
+                rows={3}
+                className="w-full rounded-lg bg-white p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none resize-none"
               />
-              <div className="flex justify-between items-center mt-1.5">
-                <div
-                  className="text-xs"
-                  style={{ color: 'rgba(255,255,255,0.7)' }}
-                >
-                  {otherText.length}/120
-                </div>
-                <button
-                  type="button"
-                  onClick={onAutoAdvance}
-                  className="text-xs font-semibold underline underline-offset-2"
-                  style={{ color: '#fff' }}
-                >
-                  Continue →
-                </button>
+              <div
+                className="text-xs"
+                style={{ color: 'rgba(255,255,255,0.7)' }}
+              >
+                Max 120 characters
               </div>
+              <button
+                type="button"
+                onClick={onAutoAdvance}
+                className="w-full h-11 rounded-lg bg-white text-foreground font-semibold hover:opacity-95 transition-opacity"
+              >
+                Next
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -468,7 +428,75 @@ function Q2Card({
 }
 
 // ──────────────────────────────────────────────────────────
-// Multi-select card (Q3 + Q4) — dark pill cloud, max 3 selectable
+// Checkbox row — rounded-rect option used in Q3 / Q4. Variable width
+// (sized to label), wraps in a flex layout, contains an empty
+// checkbox square + label. When selected the checkbox fills.
+function CheckboxRow({
+  label,
+  selected,
+  disabled = false,
+  error = false,
+  shakeKey,
+  onClick,
+}: {
+  label: string
+  selected: boolean
+  disabled?: boolean
+  error?: boolean
+  shakeKey?: number
+  onClick: () => void
+}) {
+  return (
+    <motion.button
+      key={shakeKey}
+      type="button"
+      onClick={onClick}
+      whileTap={disabled ? {} : { scale: 0.99 }}
+      animate={
+        shakeKey !== undefined && disabled
+          ? { x: [0, -4, 4, -3, 3, 0] }
+          : { x: 0 }
+      }
+      transition={{ duration: 0.35 }}
+      className={`px-3 py-2.5 rounded-lg text-sm font-semibold inline-flex items-center gap-2 text-left transition-colors border ${
+        error
+          ? 'bg-[color:rgba(255,255,255,0.92)] border-[color:#ff6b6b] text-foreground'
+          : selected
+            ? 'bg-[color:var(--color-glow-300)] border-transparent text-foreground'
+            : 'bg-white border-transparent text-foreground hover:bg-[color:var(--color-glow-50)]'
+      } ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+    >
+      <span
+        className={`shrink-0 w-4 h-4 rounded-[3px] border flex items-center justify-center ${
+          selected
+            ? 'bg-foreground border-foreground'
+            : 'bg-white border-foreground'
+        }`}
+      >
+        {selected && (
+          <svg
+            width="10"
+            height="10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="white"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        )}
+      </span>
+      <span className="leading-snug">{label}</span>
+    </motion.button>
+  )
+}
+
+// ──────────────────────────────────────────────────────────
+// Multi-select card (Q3 + Q4) — dark surface, checkbox-rect rows
+// wrapping in a flex grid, max 3 selectable. Q3 supports a required
+// error state (red borders + helper swap).
 function MultiSelectCard({
   cardKey,
   title,
@@ -481,6 +509,8 @@ function MultiSelectCard({
   onNext,
   preHeader,
   onCardTap,
+  required = false,
+  showError = false,
 }: {
   cardKey: string
   title: string
@@ -493,10 +523,13 @@ function MultiSelectCard({
   onNext: () => void
   preHeader?: React.ReactNode
   onCardTap?: () => void
+  required?: boolean
+  showError?: boolean
 }) {
   const [shakeMap, setShakeMap] = useState<Record<string, number>>({})
   const max = 3
   const atMax = selected.length >= max
+  const errorActive = required && showError && selected.length === 0
 
   return (
     <motion.div
@@ -515,9 +548,11 @@ function MultiSelectCard({
           <div className="text-xl font-semibold leading-tight">{title}</div>
           <div
             className="text-xs mt-1"
-            style={{ color: 'rgba(255,255,255,0.7)' }}
+            style={{
+              color: errorActive ? '#fff' : 'rgba(255,255,255,0.7)',
+            }}
           >
-            {helper}
+            {errorActive ? 'Please select an option to continue' : helper}
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -525,12 +560,12 @@ function MultiSelectCard({
             const isSelected = selected.includes(opt)
             const disabled = atMax && !isSelected
             return (
-              <Pill
+              <CheckboxRow
                 key={opt}
                 label={opt}
-                multi
                 selected={isSelected}
                 disabled={disabled}
+                error={errorActive}
                 shakeKey={shakeMap[opt]}
                 onClick={() => {
                   if (disabled) {
@@ -599,9 +634,7 @@ function Q5Card({
                 animate={{ scale: filled ? 1 : 0.98 }}
                 transition={{ duration: 0.18 }}
                 className="p-0.5"
-                style={{
-                  color: filled ? '#f9a826' : 'rgba(255,255,255,0.35)',
-                }}
+                style={{ color: filled ? '#f9a826' : '#ffffff' }}
               >
                 <StarSVG filled={filled} />
               </motion.button>
@@ -651,7 +684,7 @@ function DoneCard() {
       exit="exit"
       transition={slideT}
     >
-      <div className="rounded-xl bg-card border border-border px-5 py-4 space-y-3">
+      <div className="rounded-xl bg-card border border-border px-5 py-4 space-y-2">
         <div className="flex items-start justify-between gap-4">
           <motion.div
             initial={{ y: 4, opacity: 0 }}
@@ -659,7 +692,7 @@ function DoneCard() {
             transition={{ delay: 0.1 }}
             className="text-base font-semibold text-foreground"
           >
-            Thanks for sharing.
+            Thank you for sharing!
           </motion.div>
           <motion.div
             initial={{ scale: 0, rotate: -20 }}
@@ -681,7 +714,7 @@ function DoneCard() {
           transition={{ delay: 0.2 }}
           className="text-sm text-muted-foreground"
         >
-          View your contract details, track your coverage, and see what's next.
+          View your contract details, track your coverage and see what's next.
         </motion.div>
       </div>
     </motion.div>
@@ -944,6 +977,7 @@ export default function ThankYouSurveyV2() {
   const [q1Other, setQ1Other] = useState('')
   const [q2, setQ2] = useState<string | null>(null)
   const [q3, setQ3] = useState<string[]>([])
+  const [q3Error, setQ3Error] = useState(false)
   const [q4, setQ4] = useState<string[]>([])
   const [q5, setQ5] = useState(0)
   const [q5Text, setQ5Text] = useState('')
@@ -963,7 +997,13 @@ export default function ThankYouSurveyV2() {
     setStep((s) => {
       if (s === 1) return 2
       if (s === 2) return 3
-      if (s === 3) return 4
+      if (s === 3) {
+        if (q3.length === 0) {
+          setQ3Error(true)
+          return 3
+        }
+        return 4
+      }
       if (s === 4) return 5
       return 'done'
     })
@@ -972,6 +1012,7 @@ export default function ThankYouSurveyV2() {
     setStep('done')
   }
   function toggleQ3(v: string) {
+    setQ3Error(false)
     setQ3((s) => (s.includes(v) ? s.filter((x) => x !== v) : [...s, v]))
   }
   function toggleQ4(v: string) {
@@ -984,6 +1025,7 @@ export default function ThankYouSurveyV2() {
     setQ1Other('')
     setQ2(null)
     setQ3([])
+    setQ3Error(false)
     setQ4([])
     setQ5(0)
     setQ5Text('')
@@ -1000,12 +1042,10 @@ export default function ThankYouSurveyV2() {
     <AnimatePresence mode="wait">
       {step === 1 && (
         <Q1Card
-          mobile={mobile}
           selected={q1}
           otherText={q1Other}
           onSelect={setQ1}
           onOtherChange={setQ1Other}
-          onClose={closeSurvey}
           onAutoAdvance={advance}
         />
       )}
@@ -1028,6 +1068,8 @@ export default function ThankYouSurveyV2() {
           onToggle={toggleQ3}
           onClose={closeSurvey}
           onNext={advance}
+          required
+          showError={q3Error}
         />
       )}
       {step === 4 && (
