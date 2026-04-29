@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 
 // ──────────────────────────────────────────────────────────
 // Data
-type Step = 'teaser' | 1 | 2 | 3 | 4 | 5 | 'done'
+type Step = 1 | 2 | 3 | 4 | 5 | 'done'
 
 const Q1_OPTIONS = [
   'Google search',
@@ -173,8 +173,9 @@ const slide = {
 const slideT = { duration: 0.26, ease: [0.2, 0.8, 0.2, 1] as const }
 
 // ──────────────────────────────────────────────────────────
-// Survey card wrapper (reusable): bordered rounded-xl box with optional close
-function SurveyCard({
+// Dark survey-card wrapper: dark teal background, white text,
+// optional close X (always white), optional bottom counter/Next slot.
+function DarkSurveyCard({
   children,
   onClose,
   showClose = true,
@@ -184,24 +185,29 @@ function SurveyCard({
   showClose?: boolean
 }) {
   return (
-    <div className="rounded-xl bg-card border border-border px-5 py-4 relative">
+    <div
+      className="rounded-2xl px-5 py-5 relative"
+      style={{ background: 'var(--card-background)', color: '#fff' }}
+    >
       {showClose && onClose && (
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Close survey"
+          className="absolute top-4 right-4 transition-opacity hover:opacity-70"
+          style={{ color: '#fff' }}
         >
           <Icon d={Icons.x} size={18} />
         </button>
       )}
-      <div className="space-y-3">{children}</div>
+      <div className="space-y-4">{children}</div>
     </div>
   )
 }
 
 // ──────────────────────────────────────────────────────────
-// Option row
-function OptionRow({
+// Pill (used in word-cloud layouts). Variable width, rounded-full.
+function Pill({
   label,
   selected,
   disabled = false,
@@ -221,49 +227,41 @@ function OptionRow({
       key={shakeKey}
       type="button"
       onClick={onClick}
+      whileTap={disabled ? {} : { scale: 0.96 }}
       animate={
         shakeKey !== undefined && disabled
           ? { x: [0, -4, 4, -3, 3, 0] }
           : { x: 0 }
       }
       transition={{ duration: 0.35 }}
-      whileHover={disabled ? {} : { y: -1 }}
-      className={`w-full flex items-center gap-2 rounded-lg border px-4 py-3 text-left text-sm transition-colors ${
+      className={`px-3.5 py-1.5 text-sm font-semibold rounded-full whitespace-nowrap inline-flex items-center gap-1.5 transition-colors ${
         selected
-          ? 'bg-card border-primary'
-          : 'bg-card border-border hover:border-primary/40'
-      } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          ? 'bg-[color:var(--color-glow-300)] text-foreground'
+          : 'bg-white text-foreground hover:bg-[color:var(--color-glow-50)]'
+      } ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
     >
-      <span
-        className={`shrink-0 w-4 h-4 border flex items-center justify-center ${
-          multi ? 'rounded-[3px]' : 'rounded-full'
-        } ${selected ? 'bg-primary border-primary' : 'border-foreground bg-card'}`}
-      >
-        {selected &&
-          (multi ? (
-            <svg
-              width="10"
-              height="10"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          ) : (
-            <span className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />
-          ))}
-      </span>
-      <span className="font-semibold text-foreground">{label}</span>
+      {multi && selected && (
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      )}
+      {label}
     </motion.button>
   )
 }
 
 // ──────────────────────────────────────────────────────────
-// Counter footer (shared) + optional Next
+// Counter + optional Next button. Used inside dark cards — buttons
+// render in inverted-primary (white bg) for contrast against dark teal.
 function CardFooter({
   counter,
   onNext,
@@ -275,12 +273,17 @@ function CardFooter({
 }) {
   return (
     <div className="pt-1 space-y-2">
-      <div className="text-xs text-muted-foreground text-center">{counter}</div>
+      <div
+        className="text-xs text-center"
+        style={{ color: 'rgba(255,255,255,0.7)' }}
+      >
+        {counter}
+      </div>
       {onNext && (
         <button
           type="button"
           onClick={onNext}
-          className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-95 transition-opacity"
+          className="w-full h-11 rounded-lg bg-white text-foreground font-semibold hover:opacity-95 transition-opacity"
         >
           {nextLabel}
         </button>
@@ -290,54 +293,9 @@ function CardFooter({
 }
 
 // ──────────────────────────────────────────────────────────
-// Teaser (Start state)
-function Teaser({
-  onStart,
-  mobile,
-}: {
-  onStart: () => void
-  mobile: boolean
-}) {
-  return (
-    <motion.div
-      key="teaser"
-      variants={slide}
-      custom={1}
-      initial="initial"
-      animate="center"
-      exit="exit"
-      transition={slideT}
-    >
-      <div
-        className={`rounded-xl px-5 py-4 ${
-          mobile ? 'space-y-3' : 'flex items-center gap-5'
-        }`}
-        style={{ background: 'var(--card-background)', color: '#fff' }}
-      >
-        <div className={mobile ? 'space-y-1.5' : 'flex-1 space-y-1'}>
-          <div className="text-base font-semibold">
-            Before you go… How did you first hear about Chaiz?
-          </div>
-          <div className="text-sm opacity-80">
-            Answer 5 questions in less than 60 seconds
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={onStart}
-          className={`h-11 rounded-lg bg-white font-semibold text-foreground transition-colors hover:opacity-95 flex items-center justify-center gap-2 ${
-            mobile ? 'w-full mt-1' : 'shrink-0 px-6'
-          }`}
-        >
-          Start <Icon d={Icons.arrowRight} size={16} />
-        </button>
-      </div>
-    </motion.div>
-  )
-}
-
-// ──────────────────────────────────────────────────────────
-// Q1 — source attribution (auto-advance on select)
+// Q1 — source attribution (auto-advance on select). On mobile this card
+// starts in a collapsed peek state with a "Tap to Start" overlay; tapping
+// expands the cloud. On desktop the cloud is always fully visible.
 function Q1Card({
   selected,
   otherText,
@@ -345,6 +303,7 @@ function Q1Card({
   onOtherChange,
   onClose,
   onAutoAdvance,
+  mobile,
 }: {
   selected: string | null
   otherText: string
@@ -352,7 +311,10 @@ function Q1Card({
   onOtherChange: (v: string) => void
   onClose: () => void
   onAutoAdvance: () => void
+  mobile: boolean
 }) {
+  const [expanded, setExpanded] = useState(!mobile)
+  const [otherFocus, setOtherFocus] = useState(false)
   return (
     <motion.div
       key="q1"
@@ -363,74 +325,104 @@ function Q1Card({
       exit="exit"
       transition={slideT}
     >
-      <SurveyCard onClose={onClose}>
-        <div className="text-base font-semibold text-foreground pr-6">
+      <DarkSurveyCard onClose={onClose}>
+        <div className="text-xl font-semibold leading-tight pr-7">
           How did you first hear about Chaiz?
         </div>
-        <div className="space-y-2">
-          {Q1_OPTIONS.map((opt) => {
-            const isSelected = selected === opt
-            const label = opt === 'Other' ? 'Other' : opt
-            return (
-              <div key={opt}>
-                <OptionRow
-                  label={label}
+        <motion.div
+          animate={{ height: expanded ? 'auto' : 96 }}
+          transition={{ duration: 0.32, ease: [0.2, 0.8, 0.2, 1] }}
+          className="relative overflow-hidden"
+        >
+          <div className="flex flex-wrap gap-2">
+            {Q1_OPTIONS.map((opt) => {
+              const isSelected = selected === opt
+              return (
+                <Pill
+                  key={opt}
+                  label={opt}
                   selected={isSelected}
                   onClick={() => {
                     onSelect(opt)
                     if (opt !== 'Other') {
-                      // Auto-advance after a small delay
                       setTimeout(onAutoAdvance, 280)
                     }
                   }}
                 />
-                <AnimatePresence>
-                  {opt === 'Other' && isSelected && (
-                    <motion.div
-                      key="other-input"
-                      initial={{ height: 0, opacity: 0, marginTop: 0 }}
-                      animate={{ height: 'auto', opacity: 1, marginTop: 8 }}
-                      exit={{ height: 0, opacity: 0, marginTop: 0 }}
-                      transition={{ duration: 0.26, ease: 'easeOut' }}
-                      className="overflow-hidden"
-                    >
-                      <textarea
-                        autoFocus
-                        value={otherText}
-                        onChange={(e) =>
-                          onOtherChange(e.target.value.slice(0, 120))
-                        }
-                        placeholder="Tell us where…"
-                        rows={2}
-                        className="w-full rounded-lg border-2 border-primary bg-card p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none resize-none"
-                      />
-                      <div className="flex justify-between items-center mt-1.5">
-                        <div className="text-xs text-muted-foreground">
-                          {otherText.length}/120
-                        </div>
-                        <button
-                          type="button"
-                          onClick={onAutoAdvance}
-                          className="text-xs font-semibold text-foreground underline underline-offset-2"
-                        >
-                          Continue →
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+              )
+            })}
+          </div>
+          {!expanded && (
+            <div
+              className="pointer-events-none absolute bottom-0 left-0 right-0 h-12"
+              style={{
+                background:
+                  'linear-gradient(to top, var(--card-background) 30%, transparent)',
+              }}
+            />
+          )}
+        </motion.div>
+        {!expanded && (
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            className="mx-auto inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full -mt-2"
+            style={{
+              background: 'rgba(255,255,255,0.14)',
+              color: '#fff',
+            }}
+          >
+            ↓ Tap to Start
+          </button>
+        )}
+        <AnimatePresence>
+          {selected === 'Other' && (
+            <motion.div
+              key="other-input"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.26, ease: 'easeOut' }}
+              className="overflow-hidden"
+            >
+              <textarea
+                autoFocus
+                value={otherText}
+                onFocus={() => setOtherFocus(true)}
+                onBlur={() => setOtherFocus(false)}
+                onChange={(e) => onOtherChange(e.target.value.slice(0, 120))}
+                placeholder="Tell us where…"
+                rows={2}
+                className={`w-full rounded-lg bg-white p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none resize-none border-2 ${
+                  otherFocus ? 'border-[color:var(--color-glow-300)]' : 'border-transparent'
+                }`}
+              />
+              <div className="flex justify-between items-center mt-1.5">
+                <div
+                  className="text-xs"
+                  style={{ color: 'rgba(255,255,255,0.7)' }}
+                >
+                  {otherText.length}/120
+                </div>
+                <button
+                  type="button"
+                  onClick={onAutoAdvance}
+                  className="text-xs font-semibold underline underline-offset-2"
+                  style={{ color: '#fff' }}
+                >
+                  Continue →
+                </button>
               </div>
-            )
-          })}
-        </div>
-        <CardFooter counter="3 questions left" />
-      </SurveyCard>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </DarkSurveyCard>
     </motion.div>
   )
 }
 
 // ──────────────────────────────────────────────────────────
-// Q2 — competitive landscape (auto-advance)
+// Q2 — competitive landscape (auto-advance, dark pill cloud)
 function Q2Card({
   selected,
   onSelect,
@@ -452,13 +444,13 @@ function Q2Card({
       exit="exit"
       transition={slideT}
     >
-      <SurveyCard onClose={onClose}>
-        <div className="text-base font-semibold text-foreground pr-6">
+      <DarkSurveyCard onClose={onClose}>
+        <div className="text-xl font-semibold leading-tight pr-7">
           What were you thinking about doing before you chose Chaiz?
         </div>
-        <div className="space-y-2">
+        <div className="flex flex-wrap gap-2">
           {Q2_OPTIONS.map((opt) => (
-            <OptionRow
+            <Pill
               key={opt}
               label={opt}
               selected={selected === opt}
@@ -470,13 +462,13 @@ function Q2Card({
           ))}
         </div>
         <CardFooter counter="2 questions left" />
-      </SurveyCard>
+      </DarkSurveyCard>
     </motion.div>
   )
 }
 
 // ──────────────────────────────────────────────────────────
-// Multi-select card (Q3 + Q4)
+// Multi-select card (Q3 + Q4) — dark pill cloud, max 3 selectable
 function MultiSelectCard({
   cardKey,
   title,
@@ -518,17 +510,22 @@ function MultiSelectCard({
       onClickCapture={onCardTap}
     >
       {preHeader}
-      <SurveyCard onClose={onClose}>
-        <div className="pr-6">
-          <div className="text-base font-semibold text-foreground">{title}</div>
-          <div className="text-xs text-muted-foreground mt-0.5">{helper}</div>
+      <DarkSurveyCard onClose={onClose}>
+        <div className="pr-7">
+          <div className="text-xl font-semibold leading-tight">{title}</div>
+          <div
+            className="text-xs mt-1"
+            style={{ color: 'rgba(255,255,255,0.7)' }}
+          >
+            {helper}
+          </div>
         </div>
-        <div className="space-y-2">
+        <div className="flex flex-wrap gap-2">
           {options.map((opt) => {
             const isSelected = selected.includes(opt)
             const disabled = atMax && !isSelected
             return (
-              <OptionRow
+              <Pill
                 key={opt}
                 label={opt}
                 multi
@@ -547,13 +544,13 @@ function MultiSelectCard({
           })}
         </div>
         <CardFooter counter={counter} onNext={onNext} />
-      </SurveyCard>
+      </DarkSurveyCard>
     </motion.div>
   )
 }
 
 // ──────────────────────────────────────────────────────────
-// Q5 — NPS
+// Q5 — NPS-lite (dark card, amber stars, conditional follow-up text)
 function Q5Card({
   rating,
   text,
@@ -585,8 +582,8 @@ function Q5Card({
       exit="exit"
       transition={slideT}
     >
-      <SurveyCard onClose={onClose}>
-        <div className="text-base font-semibold text-foreground pr-6">
+      <DarkSurveyCard onClose={onClose}>
+        <div className="text-xl font-semibold leading-tight pr-7">
           How was your buying experience?
         </div>
         <div className="flex items-center gap-1">
@@ -602,7 +599,9 @@ function Q5Card({
                 animate={{ scale: filled ? 1 : 0.98 }}
                 transition={{ duration: 0.18 }}
                 className="p-0.5"
-                style={{ color: filled ? '#f9a826' : '#c7c7c7' }}
+                style={{
+                  color: filled ? '#f9a826' : 'rgba(255,255,255,0.35)',
+                }}
               >
                 <StarSVG filled={filled} />
               </motion.button>
@@ -619,7 +618,7 @@ function Q5Card({
               transition={{ duration: 0.28, ease: 'easeOut' }}
               className="overflow-hidden space-y-2"
             >
-              <div className="text-sm font-semibold text-foreground">
+              <div className="text-sm font-semibold" style={{ color: '#fff' }}>
                 {prompt}
               </div>
               <textarea
@@ -627,19 +626,20 @@ function Q5Card({
                 onChange={(e) => onText(e.target.value.slice(0, 240))}
                 placeholder="Optional — 1 or 2 lines"
                 rows={2}
-                className="w-full rounded-lg border border-border bg-card p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none"
+                className="w-full rounded-lg bg-white p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none resize-none"
               />
             </motion.div>
           )}
         </AnimatePresence>
         <CardFooter counter="Last question" onNext={onNext} nextLabel="Submit" />
-      </SurveyCard>
+      </DarkSurveyCard>
     </motion.div>
   )
 }
 
 // ──────────────────────────────────────────────────────────
-// Done
+// Done — kept on a light card so the survey feels visually "settled"
+// after the dark Q-cards.
 function DoneCard() {
   return (
     <motion.div
@@ -651,7 +651,7 @@ function DoneCard() {
       exit="exit"
       transition={slideT}
     >
-      <SurveyCard showClose={false}>
+      <div className="rounded-xl bg-card border border-border px-5 py-4 space-y-3">
         <div className="flex items-start justify-between gap-4">
           <motion.div
             initial={{ y: 4, opacity: 0 }}
@@ -683,7 +683,7 @@ function DoneCard() {
         >
           View your contract details, track your coverage, and see what's next.
         </motion.div>
-      </SurveyCard>
+      </div>
     </motion.div>
   )
 }
@@ -938,7 +938,7 @@ export default function ThankYouSurveyV2() {
     setParams({ view: v }, { replace: true })
 
   const [mountNonce, setMountNonce] = useState(0)
-  const [step, setStep] = useState<Step>('teaser')
+  const [step, setStep] = useState<Step>(1)
 
   const [q1, setQ1] = useState<string | null>(null)
   const [q1Other, setQ1Other] = useState('')
@@ -961,7 +961,6 @@ export default function ThankYouSurveyV2() {
 
   function advance() {
     setStep((s) => {
-      if (s === 'teaser') return 1
       if (s === 1) return 2
       if (s === 2) return 3
       if (s === 3) return 4
@@ -980,7 +979,7 @@ export default function ThankYouSurveyV2() {
   }
   function restart() {
     setMountNonce((n) => n + 1)
-    setStep('teaser')
+    setStep(1)
     setQ1(null)
     setQ1Other('')
     setQ2(null)
@@ -991,15 +990,17 @@ export default function ThankYouSurveyV2() {
   }
 
   const mobile = view === 'mobile'
-  const viewContractPrimary = step === 'teaser' || step === 'done'
+  // Page-level primary CTA: always primary now (the survey card no longer
+  // owns its own primary button), label flips to "Log In..." on Done.
+  const viewContractPrimary = true
   const pageCtaLabel =
-    step === 'done' ? 'Log In to Your Client Area' : 'View Contract'
+    step === 'done' ? 'Log In to Your Client Area' : 'Log In to Your Client Area'
 
   const surveyCard = (
     <AnimatePresence mode="wait">
-      {step === 'teaser' && <Teaser onStart={advance} mobile={mobile} />}
       {step === 1 && (
         <Q1Card
+          mobile={mobile}
           selected={q1}
           otherText={q1Other}
           onSelect={setQ1}
